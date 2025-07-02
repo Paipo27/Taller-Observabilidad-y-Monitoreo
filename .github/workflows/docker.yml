@@ -22,4 +22,4 @@ jobs:
 
       - name: Push Docker image
         run: |
-            docker push ghcr.io/${{ secrets.GH_USERNAMER }}/taller-observabilidad-y-monitoreo:latest
+            docker push ghcr.io/paipo27/taller-observabilidad-y-monitoreo:latest
