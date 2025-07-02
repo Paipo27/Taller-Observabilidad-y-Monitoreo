@@ -19,7 +19,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-            docker build -t ghcr.io/paipo27/taller-observabilidad-y-monitoreo/my-app:latest
+            docker build -t ghcr.io/paipo27/taller-observabilidad-y-monitoreo/my-app:latest ./app
 
       - name: Push Docker image
         run: |
