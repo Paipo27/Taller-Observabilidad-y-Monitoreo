@@ -15,6 +15,9 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd /home/ec2-user
-          git pull origin main
-          docker-compose up -d
+            cd ~/taller-observabilidad-y-monitoreo || git clone https://github.com/Paipo27/taller-observabilidad-y-monitoreo.git && cd taller-observabilidad-y-monitoreo
+            git pull
+            docker-compose stop app || true
+            docker-compose rm -f app || true
+            docker-compose pull app
+            docker-compose up -d app
