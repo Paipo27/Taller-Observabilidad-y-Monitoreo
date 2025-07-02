@@ -1,4 +1,4 @@
-name: Deploy App to EC2
+name: 🚀 Deploy App from GitHub Repo to EC2
 
 on:
   workflow_dispatch:
@@ -8,16 +8,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Connect and deploy app
+    - name: SSH into EC2 and deploy app
       uses: appleboy/ssh-action@v1.0.0
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-            cd ~/taller-observabilidad-y-monitoreo || git clone https://github.com/Paipo27/taller-observabilidad-y-monitoreo.git && cd taller-observabilidad-y-monitoreo
-            git pull
-            docker-compose stop app || true
-            docker-compose rm -f app || true
-            docker-compose pull app
-            docker-compose up -d app
+          # Instalar dependencias si no están presentes
+          if ! command -v git >/dev/null; then sudo apt update && sudo apt install -y git; fi
+          if ! command -v docker >/dev/null; then sudo apt install -y docker.io; fi
+          if ! docker compose version >/dev/null 2>&1; then sudo apt install -y docker-compose-plugin; fi
+
+          # Clonar el repositorio si no existe
+          cd ~
+          if [ ! -d "taller-observabilidad-y-monitoreo" ]; then
+            git clone https://github.com/Paipo27/taller-observabilidad-y-monitoreo.git
+          fi
+
+          # Entrar al proyecto y actualizar código
+          cd ~/taller-observabilidad-y-monitoreo
+          git pull origin main
+
+          # Levantar solo el servicio app
+          docker compose pull app
+          docker compose up -d app
