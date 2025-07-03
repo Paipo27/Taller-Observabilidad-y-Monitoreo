@@ -2,14 +2,13 @@ version: '3.8'
 
 services:
   app:
-    image: python:3.8
+    image: ghcr.io/paipo27/taller-observabilidad-y-monitoreo:latest
     container_name: python-app
     ports:
       - "8000:8000"
-    volumes:
-      - ./app:/app
     networks:
       - monitor-net
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus:latest
@@ -17,7 +16,7 @@ services:
     ports:
       - "9090:9090"
     volumes:
-      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yaml
     networks:
       - monitor-net
 
@@ -39,6 +38,6 @@ services:
 
 volumes:
   grafana-storage:
-
+  
 networks:
   monitor-net:
