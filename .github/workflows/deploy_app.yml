@@ -15,40 +15,23 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Detectar y usar el gestor de paquetes correcto (apt o yum)
-          install() {
-            if command -v apt >/dev/null 2>&1; then
-              sudo apt update
-              sudo apt install -y "$@"
-            elif command -v yum >/dev/null 2>&1; then
-              sudo yum install -y "$@"
-            elif command -v dnf >/dev/null 2>&1; then
-              sudo dnf install -y "$@"
-            else
-              echo "No compatible package manager found."
-              exit 1
-            fi
-          }
-
           # Instalar git si no existe
           if ! command -v git >/dev/null 2>&1; then
-            install git
+            sudo yum install -y git
           fi
 
-          # Instalar docker si no existe
+          # Instalar Docker si no está
           if ! command -v docker >/dev/null 2>&1; then
-            install docker
+            sudo yum install -y docker
             sudo systemctl start docker
             sudo systemctl enable docker
           fi
 
-          # Instalar plugin docker compose si no existe
-          if ! docker compose version >/dev/null 2>&1; then
-            install docker-compose-plugin || install docker-compose  # fallback
+          # Instalar Docker Compose (binario clásico)
+          if ! command -v docker-compose >/dev/null 2>&1; then
+            sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
           fi
-
-          # Añadir usuario actual al grupo docker
-          sudo usermod -aG docker "$USER" || true
 
           # Clonar el proyecto si no existe
           cd ~
@@ -59,10 +42,9 @@ jobs:
           cd ~/taller-observabilidad-y-monitoreo
           git pull origin main
 
-          # Asegurarse de que esté autenticado para GHCR
-          echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u paipo27 --password-stdin
+          # Login en GHCR (si usas imágenes privadas)
+          echo "${{ secrets.GH_TOKEN}}" | docker login ghcr.io -u paipo27 --password-stdin
 
-          # Desplegar app
-          docker compose pull app
-          docker compose up -d app
-
+          # Desplegar app usando docker-compose clásico
+          docker-compose pull app
+          docker-compose up -d app
