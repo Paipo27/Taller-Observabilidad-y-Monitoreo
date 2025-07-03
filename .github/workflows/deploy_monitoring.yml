@@ -15,6 +15,22 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          # Desplegar Prometheus y Grafana
-          docker-compose pull prometheus grafana || true
-          docker-compose up -d prometheus grafana
+            # Clonar el repositorio si no existe
+            cd ~
+            if [ ! -d "taller-observabilidad-y-monitoreo" ]; then
+                git clone https://github.com/Paipo27/taller-observabilidad-y-monitoreo.git
+            fi
+
+            # Entrar al proyecto y actualizar
+            cd ~/taller-observabilidad-y-monitoreo
+            git pull origin main
+
+            # Verificar que el archivo docker-compose.yml existe
+            if [ ! -f "docker-compose.yml" ]; then
+                echo "❌ docker-compose.yml no encontrado en $(pwd)"
+                exit 1
+            fi
+
+            # Desplegar Prometheus y Grafana
+            docker-compose pull prometheus grafana || true
+            docker-compose up -d prometheus grafana
